@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Encurtador de URLs | Rastreamento & Expiração</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0f172a;
+      --card-bg: #1e293b;
+      --border: #334155;
+      --primary: #38bdf8;
+      --primary-hover: #0ea5e9;
+      --text: #f8fafc;
+      --muted: #94a3b8;
+      --success: #34d399;
+      --danger: #f87171;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
+    body { background-color: var(--bg); color: var(--text); min-height: 100vh; display: flex; flex-direction: column; align-items: center; padding: 2rem 1rem; }
+    .container { width: 100%; max-width: 760px; }
+    header { text-align: center; margin-bottom: 2.5rem; }
+    h1 { font-size: 2.2rem; font-weight: 700; margin-bottom: 0.5rem; background: linear-gradient(135deg, #38bdf8, #818cf8); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    p.subtitle { color: var(--muted); font-size: 1rem; }
+    .card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; padding: 1.75rem; margin-bottom: 2rem; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.3); }
+    .tabs { display: flex; gap: 0.5rem; margin-bottom: 1.5rem; border-bottom: 1px solid var(--border); padding-bottom: 0.5rem; }
+    .tab-btn { background: none; border: none; color: var(--muted); font-size: 1rem; font-weight: 600; padding: 0.5rem 1rem; cursor: pointer; border-radius: 6px; transition: all 0.2s; }
+    .tab-btn.active { color: var(--primary); background: rgba(56, 189, 248, 0.1); }
+    .form-group { margin-bottom: 1.25rem; }
+    label { display: block; font-size: 0.875rem; font-weight: 500; margin-bottom: 0.5rem; color: #e2e8f0; }
+    input { width: 100%; padding: 0.75rem 1rem; background: #0b1120; border: 1px solid var(--border); border-radius: 8px; color: var(--text); font-size: 0.95rem; outline: none; transition: border-color 0.2s; }
+    input:focus { border-color: var(--primary); }
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+    button.btn-primary { width: 100%; padding: 0.85rem; background: var(--primary); color: #0f172a; border: none; border-radius: 8px; font-weight: 600; font-size: 1rem; cursor: pointer; transition: background 0.2s; margin-top: 0.5rem; }
+    button.btn-primary:hover { background: var(--primary-hover); }
+    .result-box { display: none; margin-top: 1.5rem; padding: 1rem; background: rgba(52, 211, 153, 0.1); border: 1px solid rgba(52, 211, 153, 0.3); border-radius: 8px; }
+    .result-link { display: flex; align-items: center; justify-content: space-between; gap: 1rem; margin-top: 0.5rem; }
+    .result-link a { color: var(--primary); text-decoration: none; font-weight: 600; word-break: break-all; }
+    .btn-copy { padding: 0.4rem 0.8rem; background: #0f172a; border: 1px solid var(--border); color: var(--text); border-radius: 6px; cursor: pointer; font-size: 0.85rem; }
+    .btn-copy:hover { border-color: var(--primary); }
+    .stats-summary { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 1rem; margin-top: 1rem; }
+    .stat-card { background: #0b1120; padding: 1rem; border-radius: 8px; border: 1px solid var(--border); text-align: center; }
+    .stat-number { font-size: 1.8rem; font-weight: 700; color: var(--primary); margin-top: 0.25rem; }
+    .stat-title { font-size: 0.8rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; }
+    .badge-list { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.75rem; }
+    .badge { background: #0b1120; border: 1px solid var(--border); padding: 0.35rem 0.65rem; border-radius: 20px; font-size: 0.85rem; display: inline-flex; align-items: center; gap: 0.4rem; }
+    .table-container { overflow-x: auto; margin-top: 1rem; }
+    table { width: 100%; border-collapse: collapse; font-size: 0.85rem; text-align: left; }
+    th, td { padding: 0.65rem 0.75rem; border-bottom: 1px solid var(--border); }
+    th { color: var(--muted); font-weight: 600; background: #0b1120; }
+    .error-msg { color: var(--danger); font-size: 0.875rem; margin-top: 0.5rem; display: none; }
+    footer { margin-top: auto; color: var(--muted); font-size: 0.85rem; text-align: center; padding-top: 2rem; }
+    footer a { color: var(--primary); text-decoration: none; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>⚡ Encurtador de URLs</h1>
+      <p class="subtitle">Alta performance com expiração de links e métricas em tempo real</p>
+    </header>
+
+    <div class="tabs">
+      <button class="tab-btn active" onclick="switchTab('encurtar')">Encurtar URL</button>
+      <button class="tab-btn" onclick="switchTab('stats')">Consultar Métricas</button>
+    </div>
+
+    <!-- ABA 1: Encurtar -->
+    <div id="tab-encurtar" class="card">
+      <form id="form-shorten" onsubmit="handleShorten(event)">
+        <div class="form-group">
+          <label for="url">URL Original (Longa) *</label>
+          <input type="url" id="url" required placeholder="https://exemplo.com/artigo-longo-com-parametros">
+        </div>
+
+        <div class="grid-2">
+          <div class="form-group">
+            <label for="dias">Validade em dias (Padrão: 7)</label>
+            <input type="number" id="dias" min="1" max="365" placeholder="7">
+          </div>
+          <div class="form-group">
+            <label for="alias">Alias Personalizado (Opcional)</label>
+            <input type="text" id="alias" placeholder="ex: meu-artigo">
+          </div>
+        </div>
+
+        <button type="submit" class="btn-primary">Encurtar URL</button>
+        <div id="error-shorten" class="error-msg"></div>
+      </form>
+
+      <div id="result-box" class="result-box">
+        <span style="color: var(--success); font-weight: 600; font-size: 0.9rem;">✓ Link encurtado com sucesso!</span>
+        <div class="result-link">
+          <a id="short-url-link" href="#" target="_blank"></a>
+          <button class="btn-copy" onclick="copyLink()">Copiar</button>
+        </div>
+        <div style="font-size: 0.8rem; color: var(--muted); margin-top: 0.5rem;" id="expira-info"></div>
+      </div>
+    </div>
+
+    <!-- ABA 2: Métricas -->
+    <div id="tab-stats" class="card" style="display: none;">
+      <form id="form-stats" onsubmit="handleStats(event)">
+        <div class="form-group">
+          <label for="stats-code">Código ou Link Curto *</label>
+          <input type="text" id="stats-code" required placeholder="ex: aB3x9z ou cole a URL curta">
+        </div>
+        <button type="submit" class="btn-primary">Ver Estatísticas</button>
+        <div id="error-stats" class="error-msg"></div>
+      </form>
+
+      <div id="stats-result" style="display: none; margin-top: 1.5rem;">
+        <h3 style="font-size: 1.1rem; margin-bottom: 0.5rem;" id="stats-target-url"></h3>
+        <p style="color: var(--muted); font-size: 0.85rem;" id="stats-status"></p>
+
+        <div class="stats-summary">
+          <div class="stat-card">
+            <div class="stat-title">Total de Cliques</div>
+            <div class="stat-number" id="stat-total">0</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-title">Dispositivos</div>
+            <div class="stat-number" id="stat-devices-count">0</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-title">Dias com Acessos</div>
+            <div class="stat-number" id="stat-days-count">0</div>
+          </div>
+        </div>
+
+        <h4 style="margin-top: 1.5rem; font-size: 0.95rem; color: var(--muted);">Dispositivos</h4>
+        <div id="device-badges" class="badge-list"></div>
+
+        <h4 style="margin-top: 1.25rem; font-size: 0.95rem; color: var(--muted);">Navegadores</h4>
+        <div id="browser-badges" class="badge-list"></div>
+
+        <h4 style="margin-top: 1.5rem; font-size: 0.95rem; color: var(--muted);">Últimos Cliques</h4>
+        <div class="table-container">
+          <table>
+            <thead>
+              <tr>
+                <th>Data/Hora (UTC)</th>
+                <th>Dispositivo</th>
+                <th>Navegador</th>
+                <th>IP</th>
+                <th>Referer</th>
+              </tr>
+            </thead>
+            <tbody id="clicks-table-body"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <footer>
+      <p>API RESTful documentada em <a href="/docs" target="_blank">/docs (Swagger UI)</a></p>
+    </footer>
+  </div>
+
+  <script>
+    function switchTab(tab) {
+      document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+      document.getElementById('tab-encurtar').style.display = tab === 'encurtar' ? 'block' : 'none';
+      document.getElementById('tab-stats').style.display = tab === 'stats' ? 'block' : 'none';
+      event.target.classList.add('active');
+    }
+
+    async function handleShorten(e) {
+      e.preventDefault();
+      const errBox = document.getElementById('error-shorten');
+      errBox.style.display = 'none';
+
+      const url = document.getElementById('url').value;
+      const diasVal = document.getElementById('dias').value;
+      const alias = document.getElementById('alias').value;
+
+      const payload = { url: url };
+      if (diasVal) payload.dias_validade = parseInt(diasVal);
+      if (alias.trim()) payload.custom_alias = alias.trim();
+
+      try {
+        const res = await fetch('/links', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        const data = await res.json();
+        if (!res.ok) {
+          errBox.textContent = data.detail || 'Erro ao encurtar URL.';
+          errBox.style.display = 'block';
+          return;
+        }
+
+        const resBox = document.getElementById('result-box');
+        const linkElem = document.getElementById('short-url-link');
+        linkElem.href = data.url_curta;
+        linkElem.textContent = data.url_curta;
+        document.getElementById('expira-info').textContent = data.expira_em 
+          ? `Expira em: ${new Date(data.expira_em).toLocaleString()}` 
+          : 'Link sem expiração definida';
+        resBox.style.display = 'block';
+      } catch (err) {
+        errBox.textContent = 'Falha ao conectar com o servidor.';
+        errBox.style.display = 'block';
+      }
+    }
+
+    function copyLink() {
+      const link = document.getElementById('short-url-link').href;
+      navigator.clipboard.writeText(link);
+      alert('Link copiado para a área de transferência!');
+    }
+
+    async function handleStats(e) {
+      e.preventDefault();
+      const errBox = document.getElementById('error-stats');
+      errBox.style.display = 'none';
+      let raw = document.getElementById('stats-code').value.trim();
+      const code = raw.split('/').pop();
+
+      try {
+        const res = await fetch(`/links/${code}/stats`);
+        const data = await res.json();
+        if (!res.ok) {
+          errBox.textContent = data.detail || 'Link não encontrado.';
+          errBox.style.display = 'block';
+          return;
+        }
+
+        document.getElementById('stats-result').style.display = 'block';
+        document.getElementById('stats-target-url').textContent = data.url_original;
+        document.getElementById('stats-status').textContent = `Código: ${data.codigo} | Status: ${data.expirado ? '⚠️ Expirado' : '✅ Ativo'}`;
+        document.getElementById('stat-total').textContent = data.total_cliques;
+        document.getElementById('stat-devices-count').textContent = Object.keys(data.cliques_por_dispositivo).length;
+        document.getElementById('stat-days-count').textContent = Object.keys(data.cliques_por_dia).length;
+
+        // Dispositivos
+        const devDiv = document.getElementById('device-badges');
+        devDiv.innerHTML = Object.entries(data.cliques_por_dispositivo)
+          .map(([dev, count]) => `<span class="badge">📱 ${dev}: <strong>${count}</strong></span>`).join('') || '<span style="color:var(--muted)">Nenhum</span>';
+
+        // Navegadores
+        const bDiv = document.getElementById('browser-badges');
+        bDiv.innerHTML = Object.entries(data.cliques_por_navegador)
+          .map(([b, count]) => `<span class="badge">🌐 ${b}: <strong>${count}</strong></span>`).join('') || '<span style="color:var(--muted)">Nenhum</span>';
+
+        // Tabela
+        const tb = document.getElementById('clicks-table-body');
+        tb.innerHTML = data.ultimos_cliques.map(c => `
+          <tr>
+            <td>${new Date(c.acessado_em).toLocaleString()}</td>
+            <td>${c.dispositivo || '-'}</td>
+            <td>${c.navegador || '-'}</td>
+            <td>${c.ip || '-'}</td>
+            <td>${c.referer ? `<a href="${c.referer}" target="_blank" style="color:var(--primary)">${c.referer}</a>` : '-'}</td>
+          </tr>
+        `).join('') || '<tr><td colspan="5" style="text-align:center; color:var(--muted)">Nenhum clique registrado ainda.</td></tr>';
+      } catch (err) {
+        errBox.textContent = 'Falha ao buscar estatísticas.';
+        errBox.style.display = 'block';
+      }
+    }
+  </script>
+</body>
+</html>

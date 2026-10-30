@@ -1,0 +1,62 @@
+services:
+  traefik:
+    image: traefik:v3.1
+    container_name: encurtador_traefik
+    command:
+      - "--api.insecure=true"
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--entrypoints.web.address=:80"
+    ports:
+      - "80:80"       # Entrada HTTP pública
+      - "8080:8080"   # Dashboard do Traefik
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    networks:
+      - encurtador_network
+    depends_on:
+      - web
+
+  web:
+    build: .
+    container_name: encurtador_api
+    restart: always
+    environment:
+      - DATABASE_URL=postgresql://encurtador_user:encurtador_pass@db:5432/encurtador_db
+      - BASE_URL=http://localhost
+      - DEFAULT_EXPIRATION_DAYS=7
+    networks:
+      - encurtador_network
+    depends_on:
+      db:
+        condition: service_healthy
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.web.rule=PathPrefix(`/`)"
+      - "traefik.http.routers.web.entrypoints=web"
+      - "traefik.http.services.web.loadbalancer.server.port=8000"
+
+  db:
+    image: postgres:16-alpine
+    container_name: encurtador_postgres
+    restart: always
+    environment:
+      POSTGRES_USER: encurtador_user
+      POSTGRES_PASSWORD: encurtador_pass
+      POSTGRES_DB: encurtador_db
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - encurtador_network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U encurtador_user -d encurtador_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+networks:
+  encurtador_network:
+    driver: bridge
+
+volumes:
+  postgres_data:
