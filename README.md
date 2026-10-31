@@ -1,10 +1,22 @@
-# ⚡ Encurtador de URLs com Expiração e Rastreamento de Métricas
+# ⚡ URL Shortener API — Expiration & Click Analytics
+
+> A portfolio-ready REST API built with FastAPI for creating short, expiring URLs and collecting click analytics without delaying redirects.
+
+## About
+
+This project demonstrates practical backend engineering decisions in a compact product: validated URL creation, custom aliases, collision-safe Base62 codes, expiration rules, HTTP 302 redirects, and asynchronous click tracking. It ships with a responsive web interface, OpenAPI documentation, automated tests, and Docker Compose infrastructure using PostgreSQL and Traefik.
+
+**Core stack:** Python · FastAPI · SQLAlchemy · Pydantic · PostgreSQL · Docker · Traefik · Pytest
+
+> **Portfolio note:** this repository contains no production credentials. Before deploying it publicly, supply your own environment variables, restrict CORS, and assess privacy requirements for access metadata such as IP addresses and User-Agent strings.
+
+---
+
+# Documentação em português
 
 Uma API RESTful moderna, resiliente e de alta performance para encurtamento de URLs, com suporte a expiração programada de links, redirecionamento ultrarrápido (HTTP 302) e rastreamento analítico assíncrono (IP, User-Agent, Referer, dispositivos e navegadores).
 
 Inclui uma **interface web responsiva**, documentação interativa **Swagger/OpenAPI**, suite completa de testes automatizados e orquestração com **Docker Compose** e **Traefik (Reverse Proxy)**.
-
-> Projeto de portfólio: demonstra práticas de API, persistência, testes e conteinerização. Antes de qualquer uso público, configure credenciais próprias, restrinja o CORS e avalie requisitos de privacidade para dados de acesso (IP e User-Agent).
 
 ---
 
