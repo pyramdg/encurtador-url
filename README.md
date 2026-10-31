@@ -10,6 +10,14 @@ This project demonstrates practical backend engineering decisions in a compact p
 
 > **Portfolio note:** this repository contains no production credentials. Before deploying it publicly, supply your own environment variables, restrict CORS, and assess privacy requirements for access metadata such as IP addresses and User-Agent strings.
 
+## Interface preview
+
+The responsive interface keeps the two primary flows simple: creating a short URL and checking its analytics.
+
+| Create a short URL | Check link analytics |
+| --- | --- |
+| ![Create a short URL](docs/images/url-shortener-create.png) | ![Check link analytics](docs/images/url-shortener-analytics.png) |
+
 ---
 
 # Documentação em português
