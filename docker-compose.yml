@@ -22,9 +22,9 @@ services:
     container_name: encurtador_api
     restart: always
     environment:
-      - DATABASE_URL=postgresql://encurtador_user:encurtador_pass@db:5432/encurtador_db
-      - BASE_URL=http://localhost
-      - DEFAULT_EXPIRATION_DAYS=7
+      - DATABASE_URL=postgresql://${POSTGRES_USER:?Configure POSTGRES_USER no arquivo .env}:${POSTGRES_PASSWORD:?Configure POSTGRES_PASSWORD no arquivo .env}@db:5432/${POSTGRES_DB:?Configure POSTGRES_DB no arquivo .env}
+      - BASE_URL=${BASE_URL:-http://localhost}
+      - DEFAULT_EXPIRATION_DAYS=${DEFAULT_EXPIRATION_DAYS:-7}
     networks:
       - encurtador_network
     depends_on:
@@ -41,9 +41,9 @@ services:
     container_name: encurtador_postgres
     restart: always
     environment:
-      POSTGRES_USER: encurtador_user
-      POSTGRES_PASSWORD: encurtador_pass
-      POSTGRES_DB: encurtador_db
+      POSTGRES_USER: ${POSTGRES_USER:?Configure POSTGRES_USER no arquivo .env}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Configure POSTGRES_PASSWORD no arquivo .env}
+      POSTGRES_DB: ${POSTGRES_DB:?Configure POSTGRES_DB no arquivo .env}
     volumes:
       - postgres_data:/var/lib/postgresql/data
     networks:

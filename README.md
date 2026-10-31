@@ -4,6 +4,8 @@ Uma API RESTful moderna, resiliente e de alta performance para encurtamento de U
 
 Inclui uma **interface web responsiva**, documentação interativa **Swagger/OpenAPI**, suite completa de testes automatizados e orquestração com **Docker Compose** e **Traefik (Reverse Proxy)**.
 
+> Projeto de portfólio: demonstra práticas de API, persistência, testes e conteinerização. Antes de qualquer uso público, configure credenciais próprias, restrinja o CORS e avalie requisitos de privacidade para dados de acesso (IP e User-Agent).
+
 ---
 
 ## 🏛️ Arquitetura e Decisões de Engenharia
@@ -77,6 +79,12 @@ flowchart TD
 ### Opção 2: Execução com Docker Compose (Traefik + PostgreSQL)
 
 Para subir todo o ecossistema (Traefik + API FastAPI + PostgreSQL 16) com um único comando:
+
+1. Crie seu arquivo local de configuração a partir do modelo e defina uma senha forte:
+   ```bash
+   cp .env.example .env
+   ```
+   No Windows PowerShell: `Copy-Item .env.example .env`
 
 ```bash
 docker compose up --build -d
